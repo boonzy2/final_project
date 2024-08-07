@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'restaurant_details.dart'; // Ensure this import is correct
 
 class HomePage extends StatefulWidget {
   @override
@@ -146,12 +147,12 @@ class _HomePageState extends State<HomePage> {
                                   .snapshots(),
                               builder: (context, snapshot) {
                                 if (snapshot.hasError) {
-                                  return Text('Error: ${snapshot.error}');
+                                  return Center(
+                                      child: Text('Error: ${snapshot.error}'));
                                 }
                                 if (!snapshot.hasData) {
                                   return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
+                                      child: CircularProgressIndicator());
                                 }
                                 final restaurants = snapshot.data!.docs;
                                 List<Widget> restaurantWidgets = [];
@@ -175,13 +176,26 @@ class _HomePageState extends State<HomePage> {
                                         '20 mins'; // This would typically be calculated or stored in the database
 
                                     restaurantWidgets.add(
-                                      _buildFoodCard(
-                                        name,
-                                        price,
-                                        address,
-                                        rating.toStringAsFixed(1),
-                                        deliveryTime,
-                                        imageUrl,
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  RestaurantDetailsPage(
+                                                restaurantId: restaurant.id,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        child: _buildFoodCard(
+                                          name,
+                                          price,
+                                          address,
+                                          rating.toStringAsFixed(1),
+                                          deliveryTime,
+                                          imageUrl,
+                                        ),
                                       ),
                                     );
                                   } catch (e) {
