@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'item_details.dart'; // Ensure this import is correct based on your project structure
 
 class RestaurantDetailsPage extends StatelessWidget {
   final String restaurantId;
@@ -12,6 +13,14 @@ class RestaurantDetailsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Restaurant Details'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.pushNamed(context, '/cart');
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
@@ -33,7 +42,6 @@ class RestaurantDetailsPage extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Display Restaurant Image
               CachedNetworkImage(
                 imageUrl: restaurantData['imageUrl'],
                 height: 200,
@@ -49,14 +57,12 @@ class RestaurantDetailsPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Restaurant Name
                     Text(
                       restaurantData['name'],
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
-                    // Restaurant Address
                     Text(
                       restaurantData['address'],
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
@@ -71,7 +77,6 @@ class RestaurantDetailsPage extends StatelessWidget {
                   ],
                 ),
               ),
-              // Display Menu Items
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
@@ -95,24 +100,63 @@ class RestaurantDetailsPage extends StatelessWidget {
                         var itemData = itemSnapshot.data!.docs[index].data()
                             as Map<String, dynamic>;
 
-                        return ListTile(
-                          leading: CachedNetworkImage(
-                            imageUrl: itemData['imageUrl'],
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                CircularProgressIndicator(),
-                            errorWidget: (context, url, error) =>
-                                Icon(Icons.error),
-                          ),
-                          title: Text(itemData['name']),
-                          subtitle: Text(itemData['description']),
-                          trailing: Text('\$${itemData['price']}'),
+                        return GestureDetector(
                           onTap: () {
-                            // Handle item tap if needed
-                            print('Tapped on ${itemData['name']}');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ItemDetailsPage(
+                                  itemId: itemSnapshot.data!.docs[index].id,
+                                ),
+                              ),
+                            );
                           },
+                          child: Card(
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 16.0),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: itemData['imageUrl'],
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) =>
+                                        CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) =>
+                                        Icon(Icons.error),
+                                  ),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          itemData['name'],
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 8.0),
+                                        Text(itemData['description']),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    '\$${itemData['price']}',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         );
                       },
                     );

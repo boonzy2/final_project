@@ -8,6 +8,9 @@ import 'more.dart';
 import 'profile.dart';
 import 'payment_details.dart';
 import 'about.dart'; // Add this line
+import 'restaurant_details.dart';
+import 'item_details.dart';
+import 'cart.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +36,10 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfilePage(),
         '/payment_details': (context) => PaymentDetailsPage(),
         '/about': (context) => AboutPage(), // Add the route for About page
+        // '/restaurantDetails': (context) => RestaurantDetailsPage(),
+        // '/itemDetails': (context) => ItemDetailsPage(),
+        '/cart': (context) =>
+            CartPage(), // Ensure you have this page implemented
       },
     );
   }
