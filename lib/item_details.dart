@@ -1,170 +1,189 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ItemDetailsPage extends StatefulWidget {
   final String itemId;
+  final String restaurantId;
 
-  ItemDetailsPage({required this.itemId});
+  ItemDetailsPage({required this.itemId, required this.restaurantId});
 
   @override
   _ItemDetailsPageState createState() => _ItemDetailsPageState();
 }
 
 class _ItemDetailsPageState extends State<ItemDetailsPage> {
-  final Map<String, bool> _selectedAddOns = {};
+  Map<String, dynamic> selectedAddOns = {};
+
+  Future<void> addToCart() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final cartRef = FirebaseFirestore.instance
+        .collection('carts')
+        .doc(currentUser!.uid)
+        .collection('items')
+        .doc(widget.itemId);
+
+    final cartDoc = await cartRef.get();
+    final itemData = (await FirebaseFirestore.instance
+            .collection('items')
+            .doc(widget.itemId)
+            .get())
+        .data();
+
+    List<Map<String, dynamic>> addOnsList = selectedAddOns.values
+        .map((addOn) => addOn as Map<String, dynamic>)
+        .toList();
+
+    if (cartDoc.exists) {
+      // Update the existing item in the cart
+      cartRef.update({
+        'quantity': FieldValue.increment(1),
+        'addOns': FieldValue.arrayUnion(addOnsList)
+      });
+    } else {
+      // Create a new item entry in the cart
+      cartRef.set({
+        'itemId': widget.itemId,
+        'name': itemData!['name'], // Make sure to pass the name of the item
+        'imageUrl': itemData['imageUrl'], // Make sure to pass the image URL
+        'price': itemData['price'], // Make sure to pass the price of the item
+        'quantity': 1,
+        'addOns': addOnsList,
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Item Details'),
+        title: Text(
+          'Item Details',
+          style: TextStyle(color: Colors.black), // Updated text color
+        ),
+        backgroundColor: Colors.yellow.shade700, // Updated background color
+        iconTheme: IconThemeData(color: Colors.black), // Update icon color
         actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart),
             onPressed: () {
-              // Handle cart icon press
-              Navigator.pushNamed(context,
-                  '/cart'); // Assuming you have a cart page route defined
+              Navigator.pushNamed(
+                  context, '/cart'); // Navigate to the cart page
             },
+            color: Colors.black, // Set the icon color to black
           ),
         ],
       ),
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('items')
-            .doc(widget.itemId)
-            .get(),
-        builder: (context, itemSnapshot) {
-          if (itemSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
+      body: Container(
+        color: Colors.yellow.shade200, // Set background color
+        child: FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance
+              .collection('items')
+              .doc(widget.itemId)
+              .get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || !snapshot.data!.exists) {
+              return Center(child: Text('Item not found.'));
+            }
 
-          if (!itemSnapshot.hasData || !itemSnapshot.data!.exists) {
-            return Center(child: Text('Item Data Not Found'));
-          }
+            var itemData = snapshot.data!.data() as Map<String, dynamic>;
 
-          var itemData = itemSnapshot.data!.data() as Map<String, dynamic>;
-
-          return ListView(
-            children: [
-              // Display Item Image
-              CachedNetworkImage(
-                imageUrl: itemData['imageUrl'],
-                height: 300,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                placeholder: (context, url) =>
-                    Center(child: CircularProgressIndicator()),
-                errorWidget: (context, url, error) =>
-                    Icon(Icons.error, size: 50),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Item Name
-                    Text(
-                      itemData['name'],
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    // Item Price
-                    Text(
-                      '\$${itemData['price']}',
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.network(itemData['imageUrl']),
+                  SizedBox(height: 8.0),
+                  Text(itemData['name'],
                       style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    // Item Description
-                    Text(
-                      itemData['description'],
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    SizedBox(height: 16),
-                    // Add-ons Title
-                    Text(
-                      'Add-ons',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    // Display Add-ons
-                    StreamBuilder<QuerySnapshot>(
+                          fontSize: 24,
+                          color: Colors.black)), // Updated text color
+                  SizedBox(height: 8.0),
+                  Text('\$${itemData['price']}',
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black)), // Updated text color
+                  SizedBox(height: 8.0),
+                  Text(itemData['description'],
+                      style: TextStyle(color: Colors.grey[800])),
+                  SizedBox(height: 16.0),
+                  Text('Add-ons',
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black)), // Updated text color
+                  Expanded(
+                    child: StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
                           .collection('items')
                           .doc(widget.itemId)
                           .collection('addons')
                           .snapshots(),
-                      builder: (context, addonSnapshot) {
-                        if (addonSnapshot.connectionState ==
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return Center(child: CircularProgressIndicator());
                         }
-
-                        if (!addonSnapshot.hasData ||
-                            addonSnapshot.data!.docs.isEmpty) {
-                          return Center(child: Text('No add-ons available.'));
+                        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          return Text('No add-ons available');
                         }
 
                         return ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: addonSnapshot.data!.docs.length,
+                          itemCount: snapshot.data!.docs.length,
                           itemBuilder: (context, index) {
-                            var addonData = addonSnapshot.data!.docs[index]
-                                .data() as Map<String, dynamic>;
-                            var addonId = addonSnapshot.data!.docs[index].id;
-
-                            return ListTile(
-                              title: Text(addonData['name']),
-                              trailing: Text(
-                                '\$${addonData['price']}',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              leading: StatefulBuilder(
-                                builder: (context, setState) {
-                                  return Checkbox(
-                                    value: _selectedAddOns[addonId] ?? false,
-                                    onChanged: (bool? value) {
-                                      setState(() {
-                                        _selectedAddOns[addonId] = value!;
-                                      });
-                                    },
-                                  );
-                                },
-                              ),
+                            var addon = snapshot.data!.docs[index];
+                            return CheckboxListTile(
+                              title: Text(
+                                  '${addon['name']} (\$${addon['price']})',
+                                  style: TextStyle(
+                                      color:
+                                          Colors.black)), // Updated text color
+                              value: selectedAddOns.containsKey(addon.id),
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  if (value == true) {
+                                    selectedAddOns[addon.id] = {
+                                      'name': addon['name'],
+                                      'price': addon['price']
+                                    };
+                                  } else {
+                                    selectedAddOns.remove(addon.id);
+                                  }
+                                });
+                              },
                             );
                           },
                         );
                       },
                     ),
-                    SizedBox(height: 16),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Handle add to cart
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 50, vertical: 15),
-                          textStyle: TextStyle(fontSize: 20),
-                        ),
-                        child: Text('Add to Cart'),
+                  ),
+                  SizedBox(height: 16.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      addToCart();
+                      Navigator.pop(context);
+                    },
+                    child: Text('Add to Cart',
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.white)), // Updated button text color
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors
+                          .yellow.shade700, // Updated button background color
+                      minimumSize: Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

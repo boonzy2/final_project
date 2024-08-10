@@ -83,11 +83,10 @@ class _MorePageState extends State<MorePage> {
             SizedBox(height: 16),
             _buildListTile(
               context,
-              icon: Icons.notifications,
-              title: 'Notifications',
-              trailing: Text('15', style: TextStyle(color: Colors.red)),
+              icon: Icons.feedback,
+              title: 'Feedback',
               onTap: () {
-                // Navigate to Notifications page
+                // Navigate to Feedback page
               },
             ),
             SizedBox(height: 16),
@@ -106,6 +105,15 @@ class _MorePageState extends State<MorePage> {
               title: 'About Us',
               onTap: () {
                 Navigator.pushNamed(context, '/about');
+              },
+            ),
+            SizedBox(height: 16),
+            _buildListTile(
+              context,
+              icon: Icons.description,
+              title: 'Terms and Service',
+              onTap: () {
+                Navigator.pushNamed(context, '/terms');
               },
             ),
             SizedBox(height: 16),

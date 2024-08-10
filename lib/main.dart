@@ -11,6 +11,8 @@ import 'about.dart'; // Add this line
 import 'restaurant_details.dart';
 import 'item_details.dart';
 import 'cart.dart';
+import 'favorites.dart';
+import 'terms.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,10 +38,14 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => ProfilePage(),
         '/payment_details': (context) => PaymentDetailsPage(),
         '/about': (context) => AboutPage(), // Add the route for About page
-        // '/restaurantDetails': (context) => RestaurantDetailsPage(),
-        // '/itemDetails': (context) => ItemDetailsPage(),
-        '/cart': (context) =>
-            CartPage(), // Ensure you have this page implemented
+        '/cart': (context) => CartPage(),
+        // Dynamic routes for restaurant and item details
+        '/restaurantDetails': (context) =>
+            RestaurantDetailsPage(restaurantId: ''),
+        '/itemDetails': (context) =>
+            ItemDetailsPage(itemId: '', restaurantId: ''),
+        '/favorites': (context) => FavoritesPage(),
+        '/terms': (context) => TermsPage(),
       },
     );
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'restaurant_details.dart'; // Ensure this import is correct
+import 'restaurant_details.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -31,6 +31,42 @@ class _HomePageState extends State<HomePage> {
         _profilePictureUrl = userData?['profilePicture'] ?? '';
       });
     }
+  }
+
+  Future<void> _toggleFavorite(String restaurantId) async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentReference favoriteRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('favorites')
+          .doc(restaurantId);
+
+      DocumentSnapshot doc = await favoriteRef.get();
+      if (doc.exists) {
+        // Assuming that the 'favorite' field is present
+        await favoriteRef.delete();
+      } else {
+        // Add favorite with a boolean field or any necessary data
+        await favoriteRef.set({'favorite': true});
+      }
+
+      setState(() {});
+    }
+  }
+
+  Future<bool> _isFavorite(String restaurantId) async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('favorites')
+          .doc(restaurantId)
+          .get();
+      return doc.exists;
+    }
+    return false;
   }
 
   @override
@@ -176,26 +212,36 @@ class _HomePageState extends State<HomePage> {
                                         '20 mins'; // This would typically be calculated or stored in the database
 
                                     restaurantWidgets.add(
-                                      GestureDetector(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  RestaurantDetailsPage(
-                                                restaurantId: restaurant.id,
-                                              ),
+                                      FutureBuilder<bool>(
+                                        future: _isFavorite(restaurant.id),
+                                        builder: (context, favoriteSnapshot) {
+                                          bool isFavorite =
+                                              favoriteSnapshot.data ?? false;
+                                          return GestureDetector(
+                                            onTap: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      RestaurantDetailsPage(
+                                                    restaurantId: restaurant.id,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            child: _buildFoodCard(
+                                              name,
+                                              price,
+                                              address,
+                                              rating.toStringAsFixed(1),
+                                              deliveryTime,
+                                              imageUrl,
+                                              isFavorite,
+                                              () => _toggleFavorite(
+                                                  restaurant.id),
                                             ),
                                           );
                                         },
-                                        child: _buildFoodCard(
-                                          name,
-                                          price,
-                                          address,
-                                          rating.toStringAsFixed(1),
-                                          deliveryTime,
-                                          imageUrl,
-                                        ),
                                       ),
                                     );
                                   } catch (e) {
@@ -278,6 +324,8 @@ class _HomePageState extends State<HomePage> {
     String rating,
     String deliveryTime,
     String imagePath,
+    bool isFavorite,
+    VoidCallback onFavoriteToggle,
   ) {
     return Card(
       child: ListTile(
@@ -296,6 +344,13 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ],
+        ),
+        trailing: IconButton(
+          icon: Icon(
+            isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: isFavorite ? Colors.red : Colors.grey,
+          ),
+          onPressed: onFavoriteToggle,
         ),
       ),
     );

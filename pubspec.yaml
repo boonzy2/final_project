@@ -39,7 +39,9 @@ dependencies:
   fluttertoast: ^8.0.9
   cupertino_icons: ^1.0.6
   url_launcher: ^6.0.0
-  cached_network_image: ^3.2.3
+  cached_network_image: ^3.1.0
+  intl: ^0.17.0  # Add this line
+  timezone: ^0.8.0   # Add this line
 
 dev_dependencies:
   flutter_test:
