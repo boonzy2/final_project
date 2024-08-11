@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart'; // Import GetX
 import 'firebase_options.dart';
 import 'login.dart';
 import 'home.dart';
@@ -7,7 +8,7 @@ import 'landing_page.dart';
 import 'more.dart';
 import 'profile.dart';
 import 'payment_details.dart';
-import 'about.dart'; // Add this line
+import 'about.dart';
 import 'restaurant_details.dart';
 import 'item_details.dart';
 import 'cart.dart';
@@ -28,30 +29,39 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
+      // Use GetMaterialApp instead of MaterialApp
       title: 'Food Delivery App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LandingPage(),
-      routes: {
-        '/login': (context) => LoginPage(),
-        '/home': (context) => HomePage(),
-        '/more': (context) => MorePage(),
-        '/profile': (context) => ProfilePage(),
-        '/payment_details': (context) => PaymentDetailsPage(),
-        '/about': (context) => AboutPage(), // Add the route for About page
-        '/cart': (context) => CartPage(),
+      initialRoute: '/', // Set the initial route
+      getPages: [
+        GetPage(name: '/', page: () => LandingPage()),
+        GetPage(name: '/login', page: () => LoginPage()),
+        GetPage(name: '/home', page: () => HomePage()),
+        GetPage(name: '/more', page: () => MorePage()),
+        GetPage(name: '/profile', page: () => ProfilePage()),
+        GetPage(name: '/payment_details', page: () => PaymentDetailsPage()),
+        GetPage(
+            name: '/about',
+            page: () => AboutPage()), // Add the route for About page
+        GetPage(name: '/cart', page: () => CartPage()),
         // Dynamic routes for restaurant and item details
-        '/restaurantDetails': (context) =>
-            RestaurantDetailsPage(restaurantId: ''),
-        '/itemDetails': (context) =>
-            ItemDetailsPage(itemId: '', restaurantId: ''),
-        '/favorites': (context) => FavoritesPage(),
-        '/terms': (context) => TermsPage(),
-        '/location': (context) => ReviewPage(),
-        '/feedback': (context) => FeedbackPage(),
-      },
+        GetPage(
+            name: '/restaurantDetails',
+            page: () => RestaurantDetailsPage(restaurantId: '')),
+        GetPage(
+            name: '/itemDetails',
+            page: () => ItemDetailsPage(itemId: '', restaurantId: '')),
+        GetPage(name: '/favorites', page: () => FavoritesPage()),
+        GetPage(name: '/terms', page: () => TermsPage()),
+        GetPage(name: '/location', page: () => ReviewPage()),
+        GetPage(name: '/feedback', page: () => FeedbackPage()),
+        GetPage(
+            name: '/restaurant_reviews',
+            page: () => RestaurantReviewsPage(restaurantId: '')),
+      ],
     );
   }
 }

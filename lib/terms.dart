@@ -8,14 +8,7 @@ class TermsPage extends StatelessWidget {
         backgroundColor: Colors.yellow.shade700,
         title: Text('Terms and Service'),
         automaticallyImplyLeading: false, // Remove the back arrow
-        actions: [
-          IconButton(
-            icon: Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.pushNamed(context, '/cart');
-            },
-          ),
-        ],
+        // Remove the actions property to get rid of the shopping cart icon
       ),
       body: Container(
         color: Colors.yellow.shade200,

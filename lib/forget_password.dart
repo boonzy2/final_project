@@ -1,26 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'firebase_auth_service.dart';
+import 'package:get/get.dart';
+import 'controllers/forget_password_controller.dart'; // Import the controller
 
-class ForgetPasswordPage extends StatefulWidget {
-  @override
-  _ForgetPasswordPageState createState() => _ForgetPasswordPageState();
-}
-
-class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final FirebaseAuthService _authService = FirebaseAuthService();
-
-  Future<void> _sendPasswordResetEmail() async {
-    String email = _emailController.text.trim();
-    if (email.isEmpty) {
-      Fluttertoast.showToast(msg: "Please enter your email");
-      return;
-    }
-    await _authService.sendPasswordResetEmail(email);
-    Fluttertoast.showToast(
-        msg: "Password reset email sent", gravity: ToastGravity.TOP);
-  }
+class ForgetPasswordPage extends StatelessWidget {
+  final ForgetPasswordController controller =
+      Get.put(ForgetPasswordController());
 
   @override
   Widget build(BuildContext context) {
@@ -78,13 +62,14 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
                           ),
                         ),
                         SizedBox(height: 30), // Reduced height
-                        _buildTextField('Email Address', _emailController),
+                        _buildTextField(
+                            'Email Address', controller.emailController),
                         SizedBox(height: 20), // Reduced height
                         SizedBox(
                           width:
                               250, // Adjusted width to match the width of the sign-up button
                           child: ElevatedButton(
-                            onPressed: _sendPasswordResetEmail,
+                            onPressed: controller.sendPasswordResetEmail,
                             child: Text(
                               'Reset Password',
                               style:

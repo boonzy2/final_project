@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'firebase_auth_service.dart'; // Import your FirebaseAuthService class
-import 'package:fluttertoast/fluttertoast.dart'; // Import fluttertoast for showing toast messages
-import 'login.dart'; // Ensure this is the correct path to your login page file
-import 'package:firebase_auth/firebase_auth.dart'; // Import User from firebase_auth package
+import 'controllers/sign_up_controller.dart'; // Import the SignUpController
 
-class SignUpPage extends StatefulWidget {
-  @override
-  _SignUpPageState createState() => _SignUpPageState();
-}
-
-class _SignUpPageState extends State<SignUpPage> {
-  final FirebaseAuthService _authService = FirebaseAuthService();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
-  bool _isPasswordVisible = false;
+class SignUpPage extends StatelessWidget {
+  final SignUpController signUpController = Get.put(SignUpController());
 
   @override
   Widget build(BuildContext context) {
@@ -67,12 +56,15 @@ class _SignUpPageState extends State<SignUpPage> {
                               ),
                             ),
                             SizedBox(height: 20),
-                            _buildTextField(_nameController, 'Name', false),
+                            _buildTextField(
+                                signUpController.nameController, 'Name', false),
                             SizedBox(height: 10),
-                            _buildTextField(_emailController, 'Email', false),
+                            _buildTextField(signUpController.emailController,
+                                'Email', false),
                             SizedBox(height: 10),
                             _buildPasswordTextField(
-                                _passwordController, 'Password'),
+                                signUpController.passwordController,
+                                'Password'),
                             SizedBox(height: 20),
                             Text(
                               'or sign up using',
@@ -97,35 +89,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   250, // Adjusted width to match the width of the sign-up button
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  String email = _emailController.text.trim();
-                                  String password =
-                                      _passwordController.text.trim();
-                                  String name = _nameController.text.trim();
-
-                                  if (email.isEmpty ||
-                                      password.isEmpty ||
-                                      name.isEmpty) {
-                                    Fluttertoast.showToast(
-                                        msg: "All fields are required",
-                                        gravity: ToastGravity.TOP);
-                                    return;
-                                  }
-
-                                  User? user = await _authService.signUp(
-                                    email: email,
-                                    password: password,
-                                    name: name,
-                                  );
-
-                                  if (user != null) {
-                                    _emailController.clear();
-                                    _passwordController.clear();
-                                    _nameController.clear();
-                                    Fluttertoast.showToast(
-                                      msg: "Sign Up Successful",
-                                      gravity: ToastGravity.TOP,
-                                    );
-                                  }
+                                  await signUpController.signUp();
                                 },
                                 child: Text(
                                   'Sign Up',
@@ -201,31 +165,32 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Widget _buildPasswordTextField(
       TextEditingController controller, String hintText) {
-    return TextField(
-      controller: controller,
-      obscureText: !_isPasswordVisible,
-      decoration: InputDecoration(
-        hintText: hintText,
-        fillColor: Colors.yellow.shade300,
-        filled: true,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-            horizontal: 20, vertical: 10), // Adjusted padding
-        suffixIcon: IconButton(
-          icon: Icon(
-            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+    return Obx(() => TextField(
+          controller: controller,
+          obscureText: !signUpController.isPasswordVisible.value,
+          decoration: InputDecoration(
+            hintText: hintText,
+            fillColor: Colors.yellow.shade300,
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: EdgeInsets.symmetric(
+                horizontal: 20, vertical: 10), // Adjusted padding
+            suffixIcon: IconButton(
+              icon: Icon(
+                signUpController.isPasswordVisible.value
+                    ? Icons.visibility
+                    : Icons.visibility_off,
+              ),
+              onPressed: () {
+                signUpController.isPasswordVisible.value =
+                    !signUpController.isPasswordVisible.value;
+              },
+            ),
           ),
-          onPressed: () {
-            setState(() {
-              _isPasswordVisible = !_isPasswordVisible;
-            });
-          },
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildSocialButton(String text, Color color, IconData icon) {

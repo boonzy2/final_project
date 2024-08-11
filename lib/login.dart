@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'firebase_auth_service.dart';
+import 'package:get/get.dart';
+import 'controllers/login_controller.dart';
+import 'forget_password.dart';
 import 'signUp.dart';
-import 'home.dart'; // Ensure this is the correct path to your home page file
-import 'forget_password.dart'; // Import the forget password page
 
-class LoginPage extends StatefulWidget {
-  @override
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuthService _authService = FirebaseAuthService();
-  bool _isPasswordVisible = false;
+class LoginPage extends StatelessWidget {
+  final LoginController loginController = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
@@ -57,23 +48,18 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         SizedBox(height: 30), // Reduced height
-                        _buildTextField(
-                            'Email Address', false, _emailController),
+                        _buildTextField('Email Address', false,
+                            loginController.emailController),
                         SizedBox(height: 20),
                         _buildPasswordTextField(
-                            'Password', _passwordController),
+                            'Password', loginController.passwordController),
                         SizedBox(height: 20), // Reduced height
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          ForgetPasswordPage()), // Navigate to forget password page
-                                );
+                                Get.to(() => ForgetPasswordPage());
                               },
                               child: Text(
                                 'Forgot Password?',
@@ -91,31 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                               250, // Adjusted width to match the width of the sign-up button
                           child: ElevatedButton(
                             onPressed: () async {
-                              String email = _emailController.text.trim();
-                              String password = _passwordController.text.trim();
-
-                              if (email.isEmpty || password.isEmpty) {
-                                Fluttertoast.showToast(
-                                  msg: "All fields are required",
-                                  gravity: ToastGravity.TOP,
-                                );
-                                return;
-                              }
-
-                              dynamic user = await _authService.login(
-                                  email: email, password: password);
-
-                              if (user != null) {
-                                _emailController.clear();
-                                _passwordController.clear();
-                                Navigator.pushReplacementNamed(
-                                    context, '/home');
-                              } else {
-                                Fluttertoast.showToast(
-                                  msg: "Invalid login",
-                                  gravity: ToastGravity.TOP,
-                                );
-                              }
+                              await loginController.login();
                             },
                             child: Text(
                               'Login',
@@ -147,12 +109,7 @@ class _LoginPageState extends State<LoginPage> {
                             SizedBox(width: 5),
                             GestureDetector(
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          SignUpPage()), // Navigate to sign-up page
-                                );
+                                Get.to(() => SignUpPage());
                               },
                               child: Text(
                                 'Sign Up',
@@ -197,29 +154,30 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildPasswordTextField(
       String hintText, TextEditingController controller) {
-    return TextField(
-      controller: controller,
-      obscureText: !_isPasswordVisible,
-      decoration: InputDecoration(
-        labelText: hintText,
-        fillColor: Colors.yellow.shade300, // Set background color
-        filled: true,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none, // Remove border side
-        ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+    return Obx(() => TextField(
+          controller: controller,
+          obscureText: !loginController.isPasswordVisible.value,
+          decoration: InputDecoration(
+            labelText: hintText,
+            fillColor: Colors.yellow.shade300, // Set background color
+            filled: true,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none, // Remove border side
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            suffixIcon: IconButton(
+              icon: Icon(
+                loginController.isPasswordVisible.value
+                    ? Icons.visibility
+                    : Icons.visibility_off,
+              ),
+              onPressed: () {
+                loginController.isPasswordVisible.value =
+                    !loginController.isPasswordVisible.value;
+              },
+            ),
           ),
-          onPressed: () {
-            setState(() {
-              _isPasswordVisible = !_isPasswordVisible;
-            });
-          },
-        ),
-      ),
-    );
+        ));
   }
 }

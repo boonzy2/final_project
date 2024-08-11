@@ -1,46 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'controllers/more_controller.dart';
 
-class MorePage extends StatefulWidget {
-  @override
-  _MorePageState createState() => _MorePageState();
-}
-
-class _MorePageState extends State<MorePage> {
-  int _selectedIndex = 3; // Default index for the "More" page
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-        Navigator.pushReplacementNamed(context, '/favorites');
-        break;
-      case 1:
-        Navigator.pushReplacementNamed(context, '/location');
-        break;
-      case 2:
-        Navigator.pushReplacementNamed(context, '/profile');
-        break;
-      case 3:
-        Navigator.pushReplacementNamed(context, '/more');
-        break;
-      case 4:
-        Navigator.pushReplacementNamed(context, '/home');
-        break;
-      default:
-        Navigator.pushReplacementNamed(context, '/home');
-    }
-  }
-
-  Future<void> _signOut() async {
-    await _auth.signOut();
-    Navigator.pushReplacementNamed(context, '/login');
-  }
+class MorePage extends StatelessWidget {
+  final MoreController moreController = Get.put(MoreController());
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +16,7 @@ class _MorePageState extends State<MorePage> {
           IconButton(
             icon: Icon(Icons.shopping_cart),
             onPressed: () {
-              Navigator.pushNamed(context, '/cart');
+              Get.toNamed('/cart');
             },
           ),
         ],
@@ -68,7 +31,7 @@ class _MorePageState extends State<MorePage> {
               icon: Icons.payment,
               title: 'Payment Details',
               onTap: () {
-                Navigator.pushNamed(context, '/payment_details');
+                Get.toNamed('/payment_details');
               },
             ),
             SizedBox(height: 16),
@@ -77,7 +40,7 @@ class _MorePageState extends State<MorePage> {
               icon: Icons.feedback,
               title: 'Feedback',
               onTap: () {
-                Navigator.pushNamed(context, '/feedback');
+                Get.toNamed('/feedback');
               },
             ),
             SizedBox(height: 16),
@@ -86,7 +49,7 @@ class _MorePageState extends State<MorePage> {
               icon: Icons.info,
               title: 'About Us',
               onTap: () {
-                Navigator.pushNamed(context, '/about');
+                Get.toNamed('/about');
               },
             ),
             SizedBox(height: 16),
@@ -95,7 +58,7 @@ class _MorePageState extends State<MorePage> {
               icon: Icons.description,
               title: 'Terms and Service',
               onTap: () {
-                Navigator.pushNamed(context, '/terms');
+                Get.toNamed('/terms');
               },
             ),
             SizedBox(height: 16),
@@ -103,57 +66,65 @@ class _MorePageState extends State<MorePage> {
               context,
               icon: Icons.exit_to_app,
               title: 'Logout',
-              onTap: _signOut,
+              onTap: moreController.signOut,
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _onItemTapped(4); // Ensure the home button navigates to the home page
+          moreController.onItemTapped(4); // Navigate to the home page
         },
         backgroundColor: Colors.orange,
         child: Icon(Icons.home, size: 28, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        notchMargin: 6.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.favorite,
-                  color: _selectedIndex == 0 ? Colors.orange : Colors.grey),
-              onPressed: () {
-                _onItemTapped(0);
-              },
+      bottomNavigationBar: Obx(() => BottomAppBar(
+            shape: CircularNotchedRectangle(),
+            notchMargin: 6.0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.favorite,
+                      color: moreController.selectedIndex.value == 0
+                          ? Colors.orange
+                          : Colors.grey),
+                  onPressed: () {
+                    moreController.onItemTapped(0);
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.rate_review,
+                      color: moreController.selectedIndex.value == 1
+                          ? Colors.orange
+                          : Colors.grey),
+                  onPressed: () {
+                    moreController.onItemTapped(1);
+                  },
+                ),
+                SizedBox(width: 40), // The dummy child
+                IconButton(
+                  icon: Icon(Icons.person,
+                      color: moreController.selectedIndex.value == 2
+                          ? Colors.orange
+                          : Colors.grey),
+                  onPressed: () {
+                    moreController.onItemTapped(2);
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.more_vert,
+                      color: moreController.selectedIndex.value == 3
+                          ? Colors.orange
+                          : Colors.grey),
+                  onPressed: () {
+                    moreController.onItemTapped(3);
+                  },
+                ),
+              ],
             ),
-            IconButton(
-              icon: Icon(Icons.rate_review,
-                  color: _selectedIndex == 1 ? Colors.orange : Colors.grey),
-              onPressed: () {
-                _onItemTapped(1);
-              },
-            ),
-            SizedBox(width: 40), // The dummy child
-            IconButton(
-              icon: Icon(Icons.person,
-                  color: _selectedIndex == 2 ? Colors.orange : Colors.grey),
-              onPressed: () {
-                _onItemTapped(2);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.more_vert,
-                  color: _selectedIndex == 3 ? Colors.orange : Colors.grey),
-              onPressed: () {
-                _onItemTapped(3);
-              },
-            ),
-          ],
-        ),
-      ),
+          )),
     );
   }
 

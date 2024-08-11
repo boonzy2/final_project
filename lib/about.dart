@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:get/get.dart';
+import 'controllers/about_controller.dart'; // Import the controller
 
 class AboutPage extends StatelessWidget {
-  void _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  }
+  final AboutController controller = Get.put(AboutController());
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +92,7 @@ class AboutPage extends StatelessWidget {
                       SizedBox(height: 8.0),
                       GestureDetector(
                         onTap: () {
-                          _launchURL('tel:+1234567890');
+                          controller.launchURL('tel:+1234567890');
                         },
                         child: Text(
                           'Phone: +1234567890',
@@ -112,7 +107,7 @@ class AboutPage extends StatelessWidget {
                       SizedBox(height: 8.0),
                       GestureDetector(
                         onTap: () {
-                          _launchURL('mailto:info@quickbites.com');
+                          controller.launchURL('mailto:info@quickbites.com');
                         },
                         child: Text(
                           'Email: info@quickbites.com',
