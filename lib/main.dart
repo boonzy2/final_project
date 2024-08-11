@@ -13,6 +13,8 @@ import 'item_details.dart';
 import 'cart.dart';
 import 'favorites.dart';
 import 'terms.dart';
+import 'restaurant_reviews.dart';
+import 'review.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,7 +48,7 @@ class MyApp extends StatelessWidget {
             ItemDetailsPage(itemId: '', restaurantId: ''),
         '/favorites': (context) => FavoritesPage(),
         '/terms': (context) => TermsPage(),
-        '/location': (context) => TermsPage(),
+        '/location': (context) => ReviewPage(),
       },
     );
   }

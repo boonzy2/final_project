@@ -87,6 +87,25 @@ class _HomePageState extends State<HomePage> {
     return query.snapshots();
   }
 
+  Future<double> _getRestaurantRating(String restaurantId) async {
+    final reviewsSnapshot = await _firestore
+        .collection('restaurants')
+        .doc(restaurantId)
+        .collection('reviews')
+        .get();
+
+    if (reviewsSnapshot.docs.isEmpty) {
+      return 0.0;
+    }
+
+    double totalRating = 0.0;
+    for (var doc in reviewsSnapshot.docs) {
+      totalRating += doc['rating'];
+    }
+
+    return totalRating / reviewsSnapshot.docs.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -209,13 +228,6 @@ class _HomePageState extends State<HomePage> {
                         var price = '\$' * data['price'];
                         var address = data['address'];
                         var imageUrl = data['imageUrl'];
-                        var reviews = data['reviews'] as List<dynamic>? ?? [];
-                        var rating = reviews.isEmpty
-                            ? 0.0
-                            : reviews
-                                    .map((e) => e['rating'])
-                                    .reduce((a, b) => a + b) /
-                                reviews.length;
                         var deliveryTime = '20 mins';
 
                         restaurantWidgets.add(
@@ -223,28 +235,34 @@ class _HomePageState extends State<HomePage> {
                             future: _isFavorite(restaurant.id),
                             builder: (context, favoriteSnapshot) {
                               bool isFavorite = favoriteSnapshot.data ?? false;
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          RestaurantDetailsPage(
-                                        restaurantId: restaurant.id,
-                                      ),
+                              return FutureBuilder<double>(
+                                future: _getRestaurantRating(restaurant.id),
+                                builder: (context, ratingSnapshot) {
+                                  double rating = ratingSnapshot.data ?? 0.0;
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              RestaurantDetailsPage(
+                                            restaurantId: restaurant.id,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: _buildFoodCard(
+                                      name,
+                                      price,
+                                      address,
+                                      rating.toStringAsFixed(1),
+                                      deliveryTime,
+                                      imageUrl,
+                                      isFavorite,
+                                      () => _toggleFavorite(restaurant.id),
                                     ),
                                   );
                                 },
-                                child: _buildFoodCard(
-                                  name,
-                                  price,
-                                  address,
-                                  rating.toStringAsFixed(1),
-                                  deliveryTime,
-                                  imageUrl,
-                                  isFavorite,
-                                  () => _toggleFavorite(restaurant.id),
-                                ),
                               );
                             },
                           ),
