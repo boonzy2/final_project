@@ -12,6 +12,26 @@ class CheckoutPage extends StatelessWidget {
     tz.setLocalLocation(tz.getLocation('Asia/Singapore'));
   }
 
+  Future<void> _createOrderInFirebase(
+      String userId,
+      String restaurantId,
+      String restaurantName,
+      String restaurantAddress,
+      List<Map<String, dynamic>> items,
+      double totalPrice,
+      DateTime orderTime) async {
+    await FirebaseFirestore.instance.collection('orders').add({
+      'userId': userId,
+      'restaurantId': restaurantId,
+      'restaurantName': restaurantName,
+      'restaurantAddress': restaurantAddress,
+      'items': items,
+      'totalPrice': totalPrice,
+      'orderTime': orderTime,
+      'status': 'pending', // You can add an initial status for the order
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -60,21 +80,34 @@ class CheckoutPage extends StatelessWidget {
           }
 
           // Iterating through the cart items before building the widget
+          List<Map<String, dynamic>> items = [];
           snapshot.data!.docs.forEach((doc) {
             var cartItem = doc.data() as Map<String, dynamic>;
             double itemTotal = cartItem['price'] ?? 0.0;
             int quantity = cartItem['quantity'] ?? 1;
             double addOnsTotal = 0.0;
 
+            List<String> addOns = [];
             for (var addOn in cartItem['addOns']) {
               if (addOn is Map<String, dynamic>) {
                 addOnsTotal += addOn['price'] ?? 0.0;
+                addOns.add(
+                    "${addOn['name']} (\$${addOn['price'].toStringAsFixed(2)})");
               }
             }
 
             itemTotal = (itemTotal + addOnsTotal) * quantity;
             totalPrice += itemTotal;
             totalItems += quantity;
+
+            // Collect item details for the order
+            items.add({
+              'name': cartItem['name'],
+              'price': cartItem['price'],
+              'quantity': quantity,
+              'addOns': addOns,
+              'itemTotal': itemTotal,
+            });
           });
 
           // Get the current time in Singapore
@@ -93,6 +126,19 @@ class CheckoutPage extends StatelessWidget {
 
               var restaurantData =
                   restaurantSnapshot.data?.data() as Map<String, dynamic>?;
+
+              if (restaurantData != null) {
+                // Create the order in Firebase
+                _createOrderInFirebase(
+                  currentUser.uid,
+                  restaurantId,
+                  restaurantData['name'],
+                  restaurantData['address'],
+                  items,
+                  totalPrice,
+                  singaporeTime,
+                );
+              }
 
               return Container(
                 color: Colors.yellow.shade200, // Set background color

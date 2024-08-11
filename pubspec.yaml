@@ -42,6 +42,7 @@ dependencies:
   cached_network_image: ^3.1.0
   intl: ^0.17.0  # Add this line
   timezone: ^0.8.0   # Add this line
+  get: ^4.6.5  # Add this line for GetX state management
 
 dev_dependencies:
   flutter_test:
