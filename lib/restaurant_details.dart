@@ -19,6 +19,16 @@ class RestaurantDetailsPage extends StatelessWidget {
           ),
           backgroundColor: Colors.yellow.shade700, // Updated background color
           iconTheme: IconThemeData(color: Colors.black), // Update icon color
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/home',
+                (route) => false,
+              );
+            },
+          ),
           actions: [
             IconButton(
               icon: Icon(Icons.shopping_cart, color: Colors.black),
