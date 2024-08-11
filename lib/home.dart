@@ -13,6 +13,10 @@ class _HomePageState extends State<HomePage> {
   final _firestore = FirebaseFirestore.instance;
   String _username = '';
   String _profilePictureUrl = '';
+  String selectedCategory = 'All';
+  String searchText = '';
+
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -44,10 +48,8 @@ class _HomePageState extends State<HomePage> {
 
       DocumentSnapshot doc = await favoriteRef.get();
       if (doc.exists) {
-        // Assuming that the 'favorite' field is present
         await favoriteRef.delete();
       } else {
-        // Add favorite with a boolean field or any necessary data
         await favoriteRef.set({'favorite': true});
       }
 
@@ -67,6 +69,22 @@ class _HomePageState extends State<HomePage> {
       return doc.exists;
     }
     return false;
+  }
+
+  Stream<QuerySnapshot> _getRestaurants() {
+    Query query = _firestore.collection('restaurants');
+
+    if (selectedCategory != 'All') {
+      query = query.where('category', isEqualTo: selectedCategory);
+    }
+
+    if (searchText.isNotEmpty) {
+      query = query
+          .where('name', isGreaterThanOrEqualTo: searchText)
+          .where('name', isLessThanOrEqualTo: searchText + '\uf8ff');
+    }
+
+    return query.snapshots();
   }
 
   @override
@@ -136,6 +154,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                     SizedBox(height: 8.0),
                     TextField(
+                      controller: _searchController,
                       decoration: InputDecoration(
                         hintText: 'Search...',
                         fillColor: Colors.yellow.shade300,
@@ -146,119 +165,98 @@ class _HomePageState extends State<HomePage> {
                         ),
                         prefixIcon: Icon(Icons.search),
                       ),
+                      onChanged: (value) {
+                        setState(() {
+                          searchText = value;
+                        });
+                      },
                     ),
                   ],
                 ),
               ),
+              SizedBox(height: 8.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(width: 16.0), // Padding at the start of the row
+                  _buildCategoryChip('All'),
+                  SizedBox(width: 8.0),
+                  _buildCategoryChip('Fast Food'),
+                  SizedBox(width: 8.0),
+                  _buildCategoryChip('Pizza'),
+                ],
+              ),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Categories',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            SizedBox(height: 8.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildCategoryChip('All'),
-                                _buildCategoryChip('Burger'),
-                                _buildCategoryChip('Doughnut'),
-                              ],
-                            ),
-                            SizedBox(height: 16.0),
-                            StreamBuilder<QuerySnapshot>(
-                              stream: _firestore
-                                  .collection('restaurants')
-                                  .snapshots(),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasError) {
-                                  return Center(
-                                      child: Text('Error: ${snapshot.error}'));
-                                }
-                                if (!snapshot.hasData) {
-                                  return Center(
-                                      child: CircularProgressIndicator());
-                                }
-                                final restaurants = snapshot.data!.docs;
-                                List<Widget> restaurantWidgets = [];
-                                for (var restaurant in restaurants) {
-                                  try {
-                                    var data = restaurant.data()
-                                        as Map<String, dynamic>;
-                                    var name = data['name'];
-                                    var price = '\$' * data['price'];
-                                    var address = data['address'];
-                                    var imageUrl = data['imageUrl'];
-                                    var reviews =
-                                        data['reviews'] as List<dynamic>? ?? [];
-                                    var rating = reviews.isEmpty
-                                        ? 0.0
-                                        : reviews
-                                                .map((e) => e['rating'])
-                                                .reduce((a, b) => a + b) /
-                                            reviews.length;
-                                    var deliveryTime =
-                                        '20 mins'; // This would typically be calculated or stored in the database
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: _getRestaurants(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+                    if (!snapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    final restaurants = snapshot.data!.docs;
+                    if (restaurants.isEmpty) {
+                      return Center(
+                          child: Text('No restaurants match your search.'));
+                    }
+                    List<Widget> restaurantWidgets = [];
+                    for (var restaurant in restaurants) {
+                      try {
+                        var data = restaurant.data() as Map<String, dynamic>;
+                        var name = data['name'];
+                        var price = '\$' * data['price'];
+                        var address = data['address'];
+                        var imageUrl = data['imageUrl'];
+                        var reviews = data['reviews'] as List<dynamic>? ?? [];
+                        var rating = reviews.isEmpty
+                            ? 0.0
+                            : reviews
+                                    .map((e) => e['rating'])
+                                    .reduce((a, b) => a + b) /
+                                reviews.length;
+                        var deliveryTime = '20 mins';
 
-                                    restaurantWidgets.add(
-                                      FutureBuilder<bool>(
-                                        future: _isFavorite(restaurant.id),
-                                        builder: (context, favoriteSnapshot) {
-                                          bool isFavorite =
-                                              favoriteSnapshot.data ?? false;
-                                          return GestureDetector(
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      RestaurantDetailsPage(
-                                                    restaurantId: restaurant.id,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            child: _buildFoodCard(
-                                              name,
-                                              price,
-                                              address,
-                                              rating.toStringAsFixed(1),
-                                              deliveryTime,
-                                              imageUrl,
-                                              isFavorite,
-                                              () => _toggleFavorite(
-                                                  restaurant.id),
-                                            ),
-                                          );
-                                        },
+                        restaurantWidgets.add(
+                          FutureBuilder<bool>(
+                            future: _isFavorite(restaurant.id),
+                            builder: (context, favoriteSnapshot) {
+                              bool isFavorite = favoriteSnapshot.data ?? false;
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          RestaurantDetailsPage(
+                                        restaurantId: restaurant.id,
                                       ),
-                                    );
-                                  } catch (e) {
-                                    print(
-                                        'Error processing restaurant data: $e');
-                                  }
-                                }
-                                return Column(
-                                  children: restaurantWidgets,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                                    ),
+                                  );
+                                },
+                                child: _buildFoodCard(
+                                  name,
+                                  price,
+                                  address,
+                                  rating.toStringAsFixed(1),
+                                  deliveryTime,
+                                  imageUrl,
+                                  isFavorite,
+                                  () => _toggleFavorite(restaurant.id),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      } catch (e) {
+                        print('Error processing restaurant data: $e');
+                      }
+                    }
+                    return ListView(
+                      children: restaurantWidgets,
+                    );
+                  },
                 ),
               ),
             ],
@@ -291,7 +289,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.pushNamed(context, '/location');
               },
             ),
-            SizedBox(width: 40), // The dummy child
+            SizedBox(width: 40),
             IconButton(
               icon: Icon(Icons.person, color: Colors.grey),
               onPressed: () {
@@ -311,9 +309,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildCategoryChip(String label) {
-    return Chip(
+    return ChoiceChip(
       label: Text(label),
+      selected: selectedCategory == label,
+      onSelected: (bool selected) {
+        setState(() {
+          selectedCategory = label;
+        });
+      },
+      selectedColor: Colors.orange,
       backgroundColor: Colors.yellow.shade300,
+      labelStyle: TextStyle(
+          color: selectedCategory == label ? Colors.white : Colors.black),
     );
   }
 

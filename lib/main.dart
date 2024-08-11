@@ -46,6 +46,7 @@ class MyApp extends StatelessWidget {
             ItemDetailsPage(itemId: '', restaurantId: ''),
         '/favorites': (context) => FavoritesPage(),
         '/terms': (context) => TermsPage(),
+        '/location': (context) => TermsPage(),
       },
     );
   }

@@ -19,6 +19,7 @@ class CheckoutPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Delivery in progress..'),
+        backgroundColor: Colors.yellow.shade700,
       ),
       body: FutureBuilder<QuerySnapshot>(
         future: FirebaseFirestore.instance
@@ -28,7 +29,15 @@ class CheckoutPage extends StatelessWidget {
             .get(),
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('Your cart is empty.'));
+            return Center(
+              child: Text(
+                'Your cart is empty.',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            );
           }
 
           double totalPrice = 0.0;
@@ -56,7 +65,8 @@ class CheckoutPage extends StatelessWidget {
           final singaporeTime =
               tz.TZDateTime.now(tz.getLocation('Asia/Singapore'));
 
-          return Padding(
+          return Container(
+            color: Colors.yellow.shade200, // Set background color
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,18 +74,26 @@ class CheckoutPage extends StatelessWidget {
                 Center(
                   child: Text(
                     'Thank you for your order!',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
                 Text(
                   "Here's your receipt:",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
                 SizedBox(height: 10),
                 Text(
                   DateFormat('yyyy-MM-dd HH:mm:ss').format(singaporeTime),
-                  style: TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: 14, color: Colors.black),
                 ),
                 Divider(thickness: 1, color: Colors.black),
                 Expanded(
@@ -105,14 +123,19 @@ class CheckoutPage extends StatelessWidget {
                         children: [
                           Text(
                             "$quantity x ${cartItem['name']} - \$${itemTotal.toStringAsFixed(2)}",
-                            style: TextStyle(fontSize: 16),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
                           ),
                           if (addOns.isNotEmpty) ...[
                             SizedBox(height: 5),
                             Text(
                               'Add-ons: ${addOns.join(', ')}',
-                              style:
-                                  TextStyle(fontSize: 14, color: Colors.grey),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
                             ),
                           ],
                           Divider(thickness: 1, color: Colors.black),
@@ -123,17 +146,29 @@ class CheckoutPage extends StatelessWidget {
                 ),
                 Text(
                   "Total Items: $totalItems",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
                 SizedBox(height: 10),
                 Text(
                   "Total Price: \$${totalPrice.toStringAsFixed(2)}",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
                 SizedBox(height: 20),
                 Text(
                   'Estimated delivery time is: ${DateFormat.jm().format(singaporeTime.add(Duration(minutes: 30)))}',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ],
             ),
