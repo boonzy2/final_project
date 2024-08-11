@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'checkout.dart';
-import 'payment_details.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'payment_details.dart';
+import 'checkout.dart';
 
 class CartPage extends StatelessWidget {
   @override
@@ -457,5 +457,45 @@ class CartPage extends StatelessWidget {
     }
 
     return (itemPrice * quantity) + addOnsTotal;
+  }
+
+  Future<bool> _checkRestaurantInCart(String newRestaurantId) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return false;
+
+    final cartCollection = await FirebaseFirestore.instance
+        .collection('carts')
+        .doc(currentUser.uid)
+        .collection('items')
+        .get();
+
+    if (cartCollection.docs.isEmpty) return true;
+
+    final firstItem = cartCollection.docs.first.data();
+    return firstItem['restaurantId'] == newRestaurantId;
+  }
+
+  Future<void> _addItemToCart(Map<String, dynamic> cartItem) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+
+    if (currentUser == null) {
+      Fluttertoast.showToast(
+        msg: "You must be logged in to add items to the cart.",
+        gravity: ToastGravity.TOP,
+      );
+      return;
+    }
+
+    final canAdd = await _checkRestaurantInCart(cartItem['restaurantId']);
+
+    if (!canAdd) {
+      Fluttertoast.showToast(
+        msg: "You can only add items from the same restaurant.",
+        gravity: ToastGravity.TOP,
+      );
+      return;
+    }
+
+    // Code to add the item to the cart
   }
 }
