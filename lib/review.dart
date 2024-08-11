@@ -134,6 +134,48 @@ class _ReviewPageState extends State<ReviewPage> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/home');
+        },
+        backgroundColor: Colors.orange,
+        child: Icon(Icons.home, size: 28, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 6.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.favorite, color: Colors.grey),
+              onPressed: () {
+                Navigator.pushNamed(context, '/favorites');
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.rate_review, color: Colors.orange),
+              onPressed: () {
+                Navigator.pushNamed(context, '/location');
+              },
+            ),
+            SizedBox(width: 40), // The dummy child
+            IconButton(
+              icon: Icon(Icons.person, color: Colors.grey),
+              onPressed: () {
+                Navigator.pushNamed(context, '/profile');
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.more_vert, color: Colors.grey),
+              onPressed: () {
+                Navigator.pushNamed(context, '/more');
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

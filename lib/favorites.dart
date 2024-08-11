@@ -158,7 +158,7 @@ class FavoritesPage extends StatelessWidget {
               },
             ),
             IconButton(
-              icon: Icon(Icons.location_on, color: Colors.grey),
+              icon: Icon(Icons.rate_review, color: Colors.grey),
               onPressed: () {
                 Navigator.pushNamed(context, '/location');
               },

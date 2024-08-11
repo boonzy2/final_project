@@ -148,7 +148,7 @@ class _MorePageState extends State<MorePage> {
               },
             ),
             IconButton(
-              icon: Icon(Icons.location_on,
+              icon: Icon(Icons.rate_review,
                   color: _selectedIndex == 1 ? Colors.orange : Colors.grey),
               onPressed: () {
                 _onItemTapped(1);
