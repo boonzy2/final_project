@@ -7,13 +7,7 @@ class LandingPage extends StatelessWidget {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Colors.white],
-          ),
-        ),
+        color: Colors.yellow.shade200, // Match background color with LoginPage
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
@@ -26,6 +20,7 @@ class LandingPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
+                  color: Colors.black, // Match text color with LoginPage
                 ),
               ),
               SizedBox(height: 20),
@@ -41,7 +36,8 @@ class LandingPage extends StatelessWidget {
                   style: TextStyle(fontSize: 20, color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black, // Background color
+                  backgroundColor:
+                      Colors.yellow[700], // Match button color with LoginPage
                   padding: EdgeInsets.symmetric(
                       horizontal: 30, vertical: 12), // Smaller button
                   shape: RoundedRectangleBorder(

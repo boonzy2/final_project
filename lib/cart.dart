@@ -271,12 +271,23 @@ class CartPage extends StatelessWidget {
                               await _checkCardValue(totalPrice);
 
                           if (canProceedToCheckout) {
+                            // Clear the cart after a successful checkout
+                            FirebaseFirestore.instance
+                                .collection('carts')
+                                .doc(currentUser!.uid)
+                                .collection('items')
+                                .get()
+                                .then((snapshot) {
+                              for (DocumentSnapshot ds in snapshot.docs) {
+                                ds.reference.delete();
+                              }
+                            });
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => CheckoutPage()),
                             );
-                            // Optional: Clear the cart here if needed
                           } else {
                             Fluttertoast.showToast(
                               msg:

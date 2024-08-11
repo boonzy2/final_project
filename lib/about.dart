@@ -13,25 +13,18 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('About Us'),
+        backgroundColor: Colors.yellow.shade700,
+        automaticallyImplyLeading:
+            true, // This will show the back arrow automatically
+      ),
       body: SafeArea(
         child: Container(
           width: double.infinity,
           color: Colors.yellow.shade200,
           child: Column(
             children: [
-              Container(
-                padding: EdgeInsets.all(16.0),
-                alignment: Alignment.topLeft,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context); // Navigate back to "More" page
-                  },
-                  child: Icon(
-                    Icons.arrow_back,
-                    size: 30,
-                  ),
-                ),
-              ),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 30.0),

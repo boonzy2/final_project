@@ -74,28 +74,10 @@ class _MorePageState extends State<MorePage> {
             SizedBox(height: 16),
             _buildListTile(
               context,
-              icon: Icons.shopping_bag,
-              title: 'My Orders',
-              onTap: () {
-                // Navigate to My Orders page
-              },
-            ),
-            SizedBox(height: 16),
-            _buildListTile(
-              context,
               icon: Icons.feedback,
               title: 'Feedback',
               onTap: () {
                 Navigator.pushNamed(context, '/feedback');
-              },
-            ),
-            SizedBox(height: 16),
-            _buildListTile(
-              context,
-              icon: Icons.mail,
-              title: 'Inbox',
-              onTap: () {
-                // Navigate to Inbox page
               },
             ),
             SizedBox(height: 16),

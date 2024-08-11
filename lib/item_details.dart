@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart'; // Import Fluttertoast package
 
 class ItemDetailsPage extends StatefulWidget {
   final String itemId;
@@ -51,6 +52,17 @@ class _ItemDetailsPageState extends State<ItemDetailsPage> {
         'addOns': addOnsList,
       });
     }
+
+    // Show a toast message after successfully adding the item to the cart
+    Fluttertoast.showToast(
+      msg: "Item successfully added to cart",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
   }
 
   @override

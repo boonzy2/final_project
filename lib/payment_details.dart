@@ -23,6 +23,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
               EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Container(
             padding: EdgeInsets.all(16.0),
+            color: Colors.yellow.shade200, // Match login background color
             child: SingleChildScrollView(
               child: AddCardForm(
                 onSubmit: (Map<String, dynamic> cardData) async {
@@ -58,7 +59,7 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
           borderSide: BorderSide.none,
         ),
         filled: true,
-        fillColor: Colors.grey[200],
+        fillColor: Colors.yellow.shade300, // Match login text field color
       ),
     );
   }
@@ -69,53 +70,50 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
       appBar: AppBar(
         title: Text('Payment Details'),
         backgroundColor: Colors.yellow.shade700,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.shopping_cart),
-            onPressed: () {
-              // Navigate to cart
-            },
-          ),
-        ],
+        // Remove the actions property here to get rid of the shopping cart icon
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection('cards')
-            .doc(_auth.currentUser!.email)
-            .collection('userCards')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No cards available'));
-          }
+      body: Container(
+        width: double.infinity,
+        color: Colors.yellow.shade200, // Match login background color
+        child: StreamBuilder<QuerySnapshot>(
+          stream: _firestore
+              .collection('cards')
+              .doc(_auth.currentUser!.email)
+              .collection('userCards')
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return Center(child: Text('No cards available'));
+            }
 
-          return ListView(
-            children: snapshot.data!.docs.map((doc) {
-              String cardNumber = doc['cardNumber'] ?? '';
-              String lastFourDigits = cardNumber.length >= 4
-                  ? cardNumber.substring(cardNumber.length - 4)
-                  : cardNumber;
+            return ListView(
+              children: snapshot.data!.docs.map((doc) {
+                String cardNumber = doc['cardNumber'] ?? '';
+                String lastFourDigits = cardNumber.length >= 4
+                    ? cardNumber.substring(cardNumber.length - 4)
+                    : cardNumber;
 
-              return ListTile(
-                leading: Icon(Icons.credit_card),
-                title: Text('**** **** **** $lastFourDigits'),
-                trailing: ElevatedButton(
-                  onPressed: () {
-                    _deleteCard(doc.id);
-                  },
-                  child: Text('Delete Card'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
+                return ListTile(
+                  leading: Icon(Icons.credit_card),
+                  title: Text('**** **** **** $lastFourDigits'),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      _deleteCard(doc.id);
+                    },
+                    child: Text('Delete Card'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
-          );
-        },
+                );
+              }).toList(),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddCardDialog,
@@ -338,7 +336,8 @@ class _AddCardFormState extends State<AddCardForm> {
             },
             child: Text('Add Card'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
+              backgroundColor:
+                  Colors.yellow[700], // Match the Login button color
             ),
           ),
         ],
@@ -364,7 +363,7 @@ class _AddCardFormState extends State<AddCardForm> {
           borderSide: BorderSide.none,
         ),
         filled: true,
-        fillColor: Colors.grey[200],
+        fillColor: Colors.yellow.shade300, // Match login text field color
       ),
       validator: validator,
       inputFormatters: inputFormatters,
