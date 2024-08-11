@@ -86,7 +86,7 @@ class _MorePageState extends State<MorePage> {
               icon: Icons.feedback,
               title: 'Feedback',
               onTap: () {
-                // Navigate to Feedback page
+                Navigator.pushNamed(context, '/feedback');
               },
             ),
             SizedBox(height: 16),
