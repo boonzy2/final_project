@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'restaurant_details.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,8 +16,10 @@ class _HomePageState extends State<HomePage> {
   String _profilePictureUrl = '';
   String selectedCategory = 'All';
   String searchText = '';
+  String deliveryAddress = '';
 
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
 
   @override
   void initState() {
@@ -33,7 +36,25 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _username = userData?['name'] ?? 'User';
         _profilePictureUrl = userData?['profilePicture'] ?? '';
+        deliveryAddress = userData?['deliveryAddress'] ?? '';
+        _addressController.text = deliveryAddress;
       });
+    }
+  }
+
+  Future<void> _saveAddress() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .update({'deliveryAddress': deliveryAddress});
+      Fluttertoast.showToast(
+        msg: "Delivery address saved.",
+        gravity: ToastGravity.TOP,
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
     }
   }
 
@@ -188,6 +209,28 @@ class _HomePageState extends State<HomePage> {
                         setState(() {
                           searchText = value;
                         });
+                      },
+                    ),
+                    SizedBox(height: 8.0),
+                    TextField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter delivery address...',
+                        fillColor: Colors.yellow.shade300,
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: Icon(Icons.location_on),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          deliveryAddress = value;
+                        });
+                      },
+                      onSubmitted: (value) {
+                        _saveAddress();
                       },
                     ),
                   ],
