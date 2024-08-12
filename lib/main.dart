@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       initialRoute: '/', // Set the initial route
+      debugShowCheckedModeBanner: false, // Remove the debug banner
       getPages: [
         GetPage(name: '/', page: () => LandingPage()),
         GetPage(name: '/login', page: () => LoginPage()),

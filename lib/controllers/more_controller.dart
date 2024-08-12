@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class MoreController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   var selectedIndex = 3.obs;
+  var isLoading = false.obs; // Observable to track loading state
 
   void onItemTapped(int index) {
     selectedIndex.value = index;
@@ -30,7 +32,30 @@ class MoreController extends GetxController {
   }
 
   Future<void> signOut() async {
-    await _auth.signOut();
-    Get.offNamed('/login');
+    try {
+      isLoading.value = true; // Set loading state to true
+      // Show loading dialog
+      Get.dialog(
+        Center(
+          child: CircularProgressIndicator(),
+        ),
+        barrierDismissible: false,
+      );
+
+      // Perform sign out
+      await _auth.signOut();
+
+      // Navigate to the login page
+      Get.offAllNamed('/login');
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to log out: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false; // Reset loading state
+      Get.back(); // Ensure the dialog is dismissed
+    }
   }
 }
